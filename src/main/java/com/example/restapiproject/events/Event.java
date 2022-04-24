@@ -12,16 +12,16 @@ import java.time.LocalDateTime;
 @EqualsAndHashCode(of = "id")
 public class Event {
 
-    private Integer id;
+    private Integer id;  // intellij 단축키 command shift t 해당 테스트 클래스로 이동
     private String name;
     private String description;
     private LocalDateTime beginEnrollmentDateTime;
     private LocalDateTime closeEnrollmentDateTime;
     private LocalDateTime beginEventDateTime;
     private LocalDateTime endEventDateTime;
-    private String location; // (optional) 이게 없으면 온라인 모임
-    private int basePrice; // (optional)
-    private int maxPrice; // (optional)
+    private String location;
+    private int basePrice;
+    private int maxPrice;
     private int limitOfEnrollment;
     private boolean offline;
     private boolean free;

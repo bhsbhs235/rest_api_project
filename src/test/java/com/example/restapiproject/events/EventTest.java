@@ -23,7 +23,7 @@ public class EventTest {
 
         Event event = new Event();
         event.setName(name);
-        event.setDescription(description);
+        event.setDescription(description); // intellij 단축키 command option v = 리팩토링
 
         assertThat(event.getName()).isEqualTo(name);
         assertThat(event.getDescription()).isEqualTo(description);
