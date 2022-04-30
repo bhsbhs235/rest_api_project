@@ -74,6 +74,12 @@
             <artifactId>spring-boot-starter-validation</artifactId>
             <version>2.6.4</version>
         </dependency>
+        <dependency>
+            <groupId>pl.pragmatists</groupId>
+            <artifactId>JUnitParams</artifactId>
+            <version>1.1.1</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
