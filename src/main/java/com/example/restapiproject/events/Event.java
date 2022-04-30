@@ -31,4 +31,17 @@ public class Event {
     @Enumerated(EnumType.STRING) // EnumType.ORDINAL 은 순서대로 0,1,2 이렇게 값을 넣어주는데 EventStatus 안의 status 변수 순서가 바뀌면 꼬이게 되기 때문에 STRING을 쓺
     private EventStatus eventStatus = EventStatus.DRAFT;
 
+    public void update(){ //  비지니스 로직(Service)에서 처리해야 하는데 간단한거라 넣어는
+        if (this.basePrice == 0 && this.maxPrice == 0) {
+            this.free = true;
+        }else{
+            this.free = false;
+        }
+
+        if(this.location == null || this.location.isBlank() ){ // isBlank()는 자바 11버전에 추가된 isEmpty보다 더 지향향
+            this.offline = false;
+        }else{
+            this.offline = true;
+        }
+    }
 }
