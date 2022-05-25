@@ -40,8 +40,14 @@ public class EventController {
 
         Event event = modelMapper.map(eventDto, Event.class);
         Event newEvent = eventRepository.save(event);
-        URI uri = linkTo(EventController.class).slash(newEvent.getId()).toUri();  // hateoas Link정보 생성
-        return ResponseEntity.created(uri).body(event);
+        var selfLinkBuilder = linkTo(EventController.class).slash(newEvent.getId());  // hateoas Link정보 생성
+        URI uri = selfLinkBuilder.toUri();
+
+        EventResource eventResource = new EventResource(event);
+        eventResource.add(linkTo(EventController.class).withRel("query-events"));
+        eventResource.add(selfLinkBuilder.withRel("update-event"));
+
+        return ResponseEntity.created(uri).body(eventResource);
 
         /*
             ObjectMapper(Spring 에서 Bean으로 자동으로 등록되 있음)에서 BeanSerializer가 event 객체를 Json형태로 바꿈 근데 Java Bean 스펙을 준수해준것만
@@ -49,3 +55,6 @@ public class EventController {
          */
     }
 }
+
+
+

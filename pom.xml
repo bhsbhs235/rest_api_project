@@ -15,19 +15,23 @@
     <description>RestApiProject</description>
     <properties>
         <java.version>11</java.version>
+        <spring-framework-version>2.2.6.RELEASE</spring-framework-version>
     </properties>
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
+            <version>${spring-framework-version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-hateoas</artifactId>
+            <version>${spring-framework-version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
+            <version>${spring-framework-version}</version>
         </dependency>
 
         <dependency>

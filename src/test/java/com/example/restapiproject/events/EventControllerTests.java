@@ -1,16 +1,19 @@
 package com.example.restapiproject.events;
 
 import com.example.restapiproject.EventDto;
+import com.example.restapiproject.common.RestDocsConfiguration;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -19,6 +22,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
 
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -27,6 +31,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 //@WebMvcTest
 @SpringBootTest
 @AutoConfigureMockMvc
+@AutoConfigureRestDocs
+@Import(RestDocsConfiguration.class) // configure 적용
 public class EventControllerTests {
 
     @Autowired
@@ -43,20 +49,17 @@ public class EventControllerTests {
     @Test
     // 정상적으로 이벤트를 생성하는 테스트
     public void createEvent() throws Exception {
-        Event event = Event.builder()
+        EventDto event = EventDto.builder()
                         .name("Hyoseong")
                         .description("REST API")
-                        .beginEnrollmentDateTime(LocalDateTime.of(2022, 01, 01, 01, 01))
-                        .closeEnrollmentDateTime(LocalDateTime.of(2022,01,02,01,01))
-                        .beginEventDateTime(LocalDateTime.of(2022, 01, 03, 01, 01))
-                        .endEventDateTime(LocalDateTime.of(2022, 01, 04, 01, 01))
+                        .beginEnrollmentDateTime(LocalDateTime.of(2018, 11, 23, 14, 21))
+                        .closeEnrollmentDateTime(LocalDateTime.of(2018, 11, 24, 14, 21))
+                        .beginEventDateTime(LocalDateTime.of(2018, 11, 25, 14, 21))
+                        .endEventDateTime(LocalDateTime.of(2018, 11, 26, 14, 21))
                         .basePrice(100)
                         .maxPrice(200)
                         .limitOfEnrollment(100)
                         .location("서초구")
-                        .free(false)
-                        .offline(true)
-                        .eventStatus(EventStatus.PUBLISHED)
                         .build();
         //event.setId(10); // return 할 때 Id가 없기 때문에 만들어줘야함
         //Mockito.when(eventRepository.save(event)).thenReturn(event); //eventRepository.save가 실행되면 event를 return 해라
@@ -74,8 +77,12 @@ public class EventControllerTests {
                 .andExpect(header().string(HttpHeaders.CONTENT_TYPE /*"Content-Type"*/, MediaTypes.HAL_JSON_VALUE /*"application/hal+json"*/))
                 .andExpect(jsonPath("id").value(Matchers.not(100)))
                 .andExpect(jsonPath("free").value(false))
-                .andExpect(jsonPath("offline").value(true))
-                .andExpect(jsonPath("eventStatus").value(EventStatus.DRAFT.name()));
+                .andExpect(jsonPath("offline").value(false))
+                .andExpect(jsonPath("eventStatus").value(EventStatus.DRAFT.name()))
+                .andExpect(jsonPath("_links.self").exists())
+                .andExpect(jsonPath("_links.query-events").exists())
+                .andExpect(jsonPath("_links.update-event").exists())
+                .andDo(document("create-event"));
     }
 
     @Test
