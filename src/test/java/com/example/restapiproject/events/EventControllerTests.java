@@ -17,10 +17,12 @@ import org.springframework.context.annotation.Import;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
+import java.util.stream.IntStream;
 
 import static org.springframework.restdocs.headers.HeaderDocumentation.*;
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.linkWithRel;
@@ -30,6 +32,7 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
 @RunWith(SpringRunner.class)
 //@WebMvcTest
@@ -37,6 +40,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @AutoConfigureRestDocs
 @Import(RestDocsConfiguration.class) // configure 적용
+@ActiveProfiles("test")
 public class EventControllerTests {
 
     @Autowired
@@ -47,8 +51,9 @@ public class EventControllerTests {
 
     @Autowired
     EventValidator eventValidator;
-    /*@MockBean
-    EventRepository eventRepository;*/ // WebMvcTest는 웹용 빈들만 추가해주고 Repository는 안해줌, 그래서 Mock객체 만들어서 넣어줌
+
+    @MockBean
+    EventRepository eventRepository; // WebMvcTest는 웹용 빈들만 추가해주고 Repository는 안해줌, 그래서 Mock객체 만들어서 넣어줌
 
     @Test
     // 정상적으로 이벤트를 생성하는 테스트
@@ -90,7 +95,8 @@ public class EventControllerTests {
                         links(
                                 linkWithRel("self").description("link to self"),
                                 linkWithRel("query-events").description("Link to query events"),
-                                linkWithRel("update-events").description("Link to update events")
+                                linkWithRel("update-events").description("Link to update events"),
+                                linkWithRel("profile").description("Link to profile")
                         ),
                         requestHeaders(
                                 headerWithName(HttpHeaders.ACCEPT).description("accept header"),
@@ -129,8 +135,8 @@ public class EventControllerTests {
                                 fieldWithPath("eventStatus").description("event status"),
                                 fieldWithPath("_links.self.href").description("link to self"),
                                 fieldWithPath("_links.query-events.href").description("link to query event list"),
-                                fieldWithPath("_links.update-events.href").description("link to update existing event")
-                                //fieldWithPath("_links.profile.href").description("link to profile")
+                                fieldWithPath("_links.update-events.href").description("link to update existing event"),
+                                fieldWithPath("_links.profile.href").description("link to profile")
                         )
                         ));
     }
@@ -204,9 +210,39 @@ public class EventControllerTests {
                 .content(this.objectMapper.writeValueAsString(eventDto)))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$[0].objectName").exists())
-                .andExpect(jsonPath("$[0].defaultMessage").exists())
-                .andExpect(jsonPath("$[0].code").exists());
+                .andExpect(jsonPath("content[0].objectName").exists())
+                .andExpect(jsonPath("content[0].defaultMessage").exists())
+                .andExpect(jsonPath("content[0].code").exists())
+                .andExpect(jsonPath("_links.index").exists());
 
+    }
+
+    @Test
+    // offset 10인 두번째 페이지 조회
+    public void queryEvents() throws Exception{
+        // given
+        IntStream.range(0,30).forEach(i -> {
+            this.generateEvent(i);
+        });
+
+        // when
+        this.mockMvc.perform(get("/api/events")
+                        .param("page", "1")
+                        .param("size", "10")
+                        .param("sort", "name,DESC")
+                )
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("page").exists())
+        ;
+    }
+
+    private void generateEvent(int index){
+        Event event = Event.builder()
+                .name("event " + index)
+                .description("anonymous")
+                .build();
+
+        this.eventRepository.save(event);
     }
 }
